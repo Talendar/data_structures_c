@@ -1,5 +1,5 @@
 /*
- * Stack implementation based on arrays.
+ * Array implementation of a stack (static/fixed size).
  * Created by Gabriel Nogueira (Talendar).
  */
 
@@ -44,7 +44,7 @@ void stack_free(Stack **stack, void (*item_free)(void *item))
 
     free((*stack)->items);
     free(*stack);
-    stack = NULL;
+    *stack = NULL;
 }
 
 /*

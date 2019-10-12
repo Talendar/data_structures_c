@@ -1,5 +1,5 @@
 /*
- * Stack implementation based on linked lists.
+ * Linked implementation of a stack (dynamic/variable size).
  * Created by Gabriel Nogueira (Talendar).
  */
 

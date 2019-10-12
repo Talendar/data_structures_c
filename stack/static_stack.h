@@ -1,5 +1,5 @@
 /*
- * Stack implementation based on arrays.
+ * Array implementation of a stack (static/fixed size).
  * Created by Gabriel Nogueira (Talendar).
  */
 
