@@ -1,3 +1,8 @@
+/*
+ * Stack implementation based on linked lists.
+ * Created by Gabriel Nogueira (Talendar).
+ */
+
 #ifndef DYNAMIC_STACK_H
     #define DYNAMIC_STACK_H
     #include <stdbool.h>

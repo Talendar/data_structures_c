@@ -1,3 +1,8 @@
+/*
+ * Stack implementation based on arrays.
+ * Created by Gabriel Nogueira (Talendar).
+ */
+
 #ifndef STATIC_STACK_H
     #define STATIC_STACK_H
     #include <stdbool.h>
