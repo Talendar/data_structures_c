@@ -1,14 +1,15 @@
-/*
- * Singly linked list implementation.
+/**
+ * Implementation of a singly linked list.
  * Created by Gabriel Nogueira (Talendar).
  */
+
 
 #include "singly_linked_list.h"
 #include <stdio.h>
 #include <stdlib.h>
 
 
-/*
+/**
  * Struct of the nodes of a singly linked list. Only a pointer to the next node is stored.
  */ 
 struct Node {
@@ -16,7 +17,8 @@ struct Node {
     Node *next;
 };
 
-/*
+
+/**
  * Struct of a singly linked list. A pointer to the last node of the list is kept in order to make appending to the list an O(1) operation.
  */
 struct List {
@@ -24,7 +26,8 @@ struct List {
     int size;
 };
 
-/*
+
+/**
  * Creates a new list and returns a pointer to it. Returns NULL if the function fails to allocate the required memory for the data structure.
  */
 List* list_create(void)
@@ -38,8 +41,12 @@ List* list_create(void)
     return list;
 }
 
-/*
+
+/**
  * Frees the memory allocated by the list, its nodes and its items. Pass NULL as the argument of item_free if you don't want to free the memory of the items.
+ * 
+ * @param list double pointer to an allocated list; after the execution, the variable pointed by this argument will be set to NULL.
+ * @return -
  */
 void list_free(List **list, void (*item_free)(void *item))
 {
@@ -54,29 +61,37 @@ void list_free(List **list, void (*item_free)(void *item))
     }
 }
 
-/*
+
+/**
  * Returns the size (number of items) of the list.
  */
 int list_size(List *list) {
     return list->size;
 }
 
-/*
+
+/**
  * Returns true if the list is empty or false otherwise.
  */
 bool list_empty(List *list) {
     return !list->size;
 }
 
-/*
- * Since a linked list size is limited only by the available memory of the system, this function always returns true and is here only for completeness.
+
+/**
+ * In this implementation, the linked list size is limited only by the amount of memory available to the program during its execution. For this reason, this function always returns false (list not full) and is here only for completeness.
  */
 bool list_full(List *list) {
-    return true;
+    return false;
 }
 
-/*
- * Inserts an item at the end of the list. Returns true if the operation was successful or false otherwise.
+
+/**
+ * Inserts an item at the end of the list.
+ * 
+ * @param list 
+ * @param item pointer to the item that will be stored in the list's new node.
+ * @return true if the operation was successful or false otherwise.
  */
 bool list_append(List *list, void *item)
 {
@@ -97,8 +112,14 @@ bool list_append(List *list, void *item)
     return false;
 }
 
-/*
- * Inserts an item at the given index of the list. The index of the newly inserted item will be the index passed as an argument. Returns false if the operation was successful or false otherwise.
+
+/**
+ * Inserts an item at the given index of the list. This function cannot insert items in the end of the list, use list_append for that.
+ * 
+ * @param list
+ * @param item pointer to the item that will be stored in the list's new node.
+ * @param index index of the newly inserted item.
+ * @return true if the operation was successful or false otherwise.
  */
 bool list_insert_at(List *list, void *item, int index)
 {
@@ -132,8 +153,13 @@ bool list_insert_at(List *list, void *item, int index)
     return false;
 }
 
-/*
- * Removes and returns a pointer to the item at the given index in the list. Returns NULL if the list is empty or if the index is out of bounds.
+
+/**
+ * Removes and returns a pointer to the item at the given index in the list. 
+ * 
+ * @param list
+ * @param index index of the item to be removed.
+ * @return NULL if the list is empty or if the index is out of bounds.
  */
 void* list_remove_at(List *list, int index) 
 {
@@ -164,15 +190,60 @@ void* list_remove_at(List *list, int index)
     return item;
 }
 
-/*
- * Removes and returns a pointer to the last item of the list. Returns NULL if the list is empty. In a singly linked list, this operation takes O(n) time and is just a wrapper for the function list_remove_at.
+
+/**
+ * Removes and returns a pointer to the first item (index 0) of the list. Wrapper for list_remove_at(0).
+ * 
+ * @param list
+ * @return a pointer to the removed item or NULL if the list is empty.
  */
 void* list_pop(List *list) {
-    return list_remove_at(list, list->size - 1);
+    return list_remove_at(list, 0);
 }
 
-/*
- * Removes and returns a pointer to the item with the given ID on the list. Returns NULL if the item is not on the list. The ID can be any data type. A function to verify if some item's ID is the correct one is expected.
+
+/**
+ * Pushes an item into the list's start (wrapper for list_insert_at(0)).
+ * 
+ * @param list 
+ * @param item 
+ * @return if the operation was sucessful and false otherwise. 
+ */
+bool list_push(List *list, void *item) {
+    return list_insert_at(list, item, 0);
+}
+
+
+/**
+ * Appends an item to the end of the list. Wrapper for list_append(). 
+ * 
+ * @param list 
+ * @param item 
+ * @return if the operation was sucessful and false otherwise. 
+ */
+bool list_enqueue(List *list, void *item) {
+    return list_append(list, item);
+}
+
+
+/**
+ * Removes and returns a pointer to the first item (index 0) of the list. Wrapper for list_remove_at(0).
+ * 
+ * @param list 
+ * @return a pointer to the removed item or NULL if the list is empty.
+ */
+void* list_dequeue(List *list) {
+    return list_remove_at(list, 0);
+}
+
+
+/**
+ * Removes and returns a pointer to the item with the given ID on the list.
+ * 
+ * @param list 
+ * @param id identifies the item; can be any data type.
+ * @param compare_id function to verify if some item's ID is the correct one.
+ * @return a pointer to the item with the given ID or NULL if the item is not on the list.
  */
 void* list_remove(List *list, void *id, bool (*compare_id)(void *item, void *id))
 {
@@ -203,8 +274,14 @@ void* list_remove(List *list, void *id, bool (*compare_id)(void *item, void *id)
     return NULL;
 }
 
-/*
- * Returns, without removing, the item with the given ID on the list. Returns NULLL if the item is not on the list. The ID can be any data type. A function to verify if some item's ID is the correct one is expected.
+
+/**
+ * Returns, without removing, the item with the given ID on the list.
+ * 
+ * @param list 
+ * @param id identifies the item; can be any data type.
+ * @param compare_id function to verify if some item's ID is the correct one.
+ * @return the item with the given ID or NULLL if the item is not on the list.
  */
 void* list_find(List *list, void *id, bool (*compare_id)(void *item, void *id))
 {
@@ -219,8 +296,9 @@ void* list_find(List *list, void *id, bool (*compare_id)(void *item, void *id))
     return NULL;
 }
 
-/*
- * Switches the items of in the indices i1 and i2 of the list. Returns true if the operation was successful or false otherwise.
+
+/**
+ * Switches the items in the indices i1 and i2 of the list. Returns true if the operation was successful or false otherwise.
  */
 bool list_switch_items(List *list, int i1, int i2)
 {
@@ -246,7 +324,8 @@ bool list_switch_items(List *list, int i1, int i2)
     return false;
 }
 
-/*
+
+/**
  * Inverts the order of the list elements.
  */
 void list_invert(List *list) {
@@ -254,7 +333,8 @@ void list_invert(List *list) {
         list_switch_items(list, i, (list->size - i - 1));
 }
 
-/*
+
+/**
  * Prints all the items of the list using the given function.
  */
 void list_print(List *list, void (*item_print)(void *item))

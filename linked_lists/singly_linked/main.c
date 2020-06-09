@@ -1,14 +1,17 @@
-/*
+/**
  * Simple program to test my singly linked list implementation.
  * Created by Gabriel Nogueira (Talendar).
  */
+
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
 #include "singly_linked_list.h"
 
+
 const bool USE_SCREEN_CLEANER = true; //clear the screen between menus; turn off in case of incompatibility
+
 
 /* 
  * Clears the terminal.
@@ -20,12 +23,14 @@ void clear_screen() {
         printf("\n\n\n\n");
 }
 
+
 /*
  * Prints an integer.
  */
 void print_int(void *integer) {
     printf("%d ", *((int*) integer));
 }
+
 
 /*
  * Cleans the input buffer.
@@ -34,12 +39,14 @@ void clean_input_buffer() {
     char c;  while((c = getchar()) != '\n' && c != EOF);
 }
 
+
 /*
  * Returns true if the given integers are equal or false otherwise.
  */
 bool compare_ints(void *a, void *b) {
     return *((int*) a) == *((int*) b);
 }
+
 
 // MAIN
 int main(void) 
@@ -51,95 +58,124 @@ int main(void)
         clear_screen(); 
         printf(
             "\n< Linked List tester by Talendar >\n"
-            "  0 - Append\n"
-            "  1 - Insert at index\n"
-            "  2 - Remove at index\n"
-            "  3 - POP\n"
-            "  4 - Remove by ID\n"
-            "  5 - Find by ID\n"
-            "  6 - Switch items\n"
-            "  7 - Invert\n"
-            "  8 - Print\n"
-            "  9 - Exit\n"
+            "  0 - Insertions\n"
+            "  1 - Removals\n"
+            "  2 - Find by ID\n"
+            "  3 - Switch items\n"
+            "  4 - Invert\n"
+            "  5 - Print\n"
+            "  6 - Exit\n"
             "Enter an option: "
         );
 
         scanf(" %c", &opt);
         clear_screen();
 
-        //no checking for the input validity is done
         switch(opt) {
+            /* INSERTIONS */
             case '0': {
-                printf("\nHow many integers would you like to add to the list?\n");
-                int qnt; scanf(" %d", &qnt);
-                
-                printf("\nEnter %d integers:\n", qnt);
+                printf(
+                    "\n> Insertion methods:\n" 
+                    "   [0] Append\n"
+                    "   [1] Insert at index\n" 
+                    "   [2] Enqueue\n"  
+                    "   [3] Push\n"
+                    "Enter an option: "
+                );
+                scanf(" %c", &opt);
+
+                int qnt = 1;
+                if(opt != '1') {
+                    printf("\nHow many integers would you like to add to the list?\n");
+                    scanf(" %d", &qnt);
+                }
+
+                printf("\nEnter %d integer(s):\n", qnt);
                 for(int i = 0; i < qnt; i++) {
                     int *n = malloc(sizeof(int));
                     scanf(" %d", n);
-                    list_append(list, n);
+
+                    //APPEND
+                    if(opt == '0')
+                        list_append(list, n);
+                    //INSERT AT INDEX
+                    else if(opt == '1') {
+                         printf("\nAt what index should the item be inserted?\n");
+                        int i; scanf(" %d", &i);
+
+                        if(list_insert_at(list, n, i))
+                            printf("\nDone.");
+                        else
+                            printf("\nOperation failure.");
+                    }
+                    //ENQUEUE
+                    else if(opt == '2')
+                        list_enqueue(list, n);
+                    //PUSH
+                    else if(opt == '3')
+                        list_push(list, n);
                 }
-                printf("\nDone.");
+
                 break;
             }
 
+            /* REMOVALS */
             case '1': {
-                printf("\nWhat integer would you to add to the list?\n");
-                int *n = malloc(sizeof(int));
-                scanf(" %d", n);
-                
-                printf("\nAt what index should the item be inserted?\n");
-                int i; scanf(" %d", &i);
+                printf(
+                    "\n> Removal methods:\n" 
+                    "   [0] Remove by index\n"
+                    "   [1] Pop\n" 
+                    "   [2] Dequeue\n"  
+                    "   [3] Remove by ID\n"
+                    "Enter an option: "
+                );
+                scanf(" %c", &opt);
 
-                if(list_insert_at(list, n, i))
-                    printf("\nDone.");
-                else
-                    printf("\nOperation failure.");
+                //REMOVE BY INDEX
+                if(opt == '0') {
+                    printf("\nWhat's the index of the item to be removed?\n");
+                    int i; scanf(" %d", &i);
+
+                    int *n = list_remove_at(list, i);
+                    if(n != NULL) {
+                        printf("\nInteger {%d} removed from the index [%d] of the list.\n", *n, i);
+                        free(n);
+                    }
+                    else
+                        printf("\nOperation failure.");
+                }
+                //POP & DEQUEUE
+                else if(opt == '1' || opt == '2') {
+                    int *n = (opt == '1') ? list_pop(list) : list_dequeue(list);
+
+                    if(n != NULL) {
+                        printf("\nInteger {%d} %s from the list.", *n, 
+                                            (opt == '1') ? "popped" : "dequeued");
+                        free(n);
+                    }
+                    else
+                        printf("\nOperation failure.");
+                }
+                //REMOVE BY ID
+                else if(opt == '3') {
+                    printf("\nWhat integer would you like to remove from the list? Only the first found is removed.\n");
+                    int *id = malloc(sizeof(int)); scanf(" %d", id);
+                    int *n = list_remove(list, id, &compare_ints);
+
+                    if(n != NULL) {
+                        printf("\nThe integer {%d} was removed from the list.", *n);
+                        free(n);
+                    }
+                    else
+                        printf("\nInteger not found on the list!");
+                    
+                    free(id);
+                }
                 break;
             }
 
+            /* FIND BY ID */
             case '2': {
-                printf("\nWhat's the index of the item to be removed?\n");
-                int i; scanf(" %d", &i);
-
-                int *n = list_remove_at(list, i);
-                if(n != NULL) {
-                    printf("\nInteger {%d} removed from the index [%d] of the list.\n", *n, i);
-                    free(n);
-                }
-                else
-                    printf("\nOperation failure.");
-                break;
-            }
-
-            case '3': {
-                int *n = list_pop(list);
-                if(n != NULL) {
-                    printf("\nInteger {%d} popped from the list.", *n);
-                    free(n);
-                }
-                else
-                    printf("\nOperation failure.");
-                break;
-            }
-
-            case '4': {
-                printf("\nWhat integer would you like to remove from the list? Only the first found is removed.\n");
-                int *id = malloc(sizeof(int)); scanf(" %d", id);
-                int *n = list_remove(list, id, &compare_ints);
-
-                if(n != NULL) {
-                    printf("\nThe integer {%d} was removed from the list.", *n);
-                    free(n);
-                }
-                else
-                    printf("\nInteger not found on the list!");
-
-                free(id);
-                break;
-            }
-
-            case '5': {
                 printf("\nWhat integer would you like to find on the list?\n");
                 int *id = malloc(sizeof(int)); scanf(" %d", id);
                 int *n = list_find(list, id, &compare_ints);
@@ -153,7 +189,8 @@ int main(void)
                 break;
             }
 
-            case '6': {
+            /* SWITCH ITEMS */
+            case '3': {
                 printf("\nIn what indices are the integers you want to swap positions?\n");
                 int i1, i2; scanf(" %d %d", &i1, &i2);
 
@@ -165,22 +202,24 @@ int main(void)
                 break;
             }
 
-            case '7': 
+            /* INVERT */
+            case '4': 
                 list_invert(list);
                 printf("\nDone.");
                 break;
 
-            case '8':
+            /* PRINT */
+            case '5':
                 printf("\n[ "); list_print(list, &print_int); printf("]\n");
                 printf("SIZE: %d\n", list_size(list));
                 break;
         }
 
-        if(opt != '9') {
+        if(opt != '6') {
             printf("\nPress ENTER to go back to the main menu.\n");
             clean_input_buffer(); getchar();
         }
-    } while(opt != '9');
+    } while(opt != '6');
 
     printf("\nLeaving...\n");
     list_free(&list, &free);
