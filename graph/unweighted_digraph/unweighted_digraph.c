@@ -1,7 +1,13 @@
 /**
- * TO_DO
+ * Implementation of an unweighted directed graph. 
  * 
- * @author Talendar
+ * Each vertex is identified by it's index in the graph's array of adjacency lists. This array's initial size can be chosen by the client (alternatively, default values can be used, hiding the internal details from the client). Note that when a vertex v has an ID greater than the graph's array of adjacency lists, the array must be expanded (memory reallocation). This might be improved later on through the use of hashing.
+ * 
+ * @todo function to shrink the graph's array of adjacency lists to a desired size.
+ * @todo reduce, by the use of hashing, the memory required by the graph to store its adjacency lists.
+ * 
+ * @version 1.0
+ * @author Gabriel Nogueira (Talendar)
  */
 
 
@@ -25,7 +31,7 @@ struct UnweightedDigraph {
 
 
 /**
- * Creates a new empty unweighted digraph and returns a pointer to it. With this function the caller can specifies the graph's adjacency lists array initial size as well as how much it will grow in each realloc.
+ * Creates a new empty unweighted digraph and returns a pointer to it. With this function the caller can specify the graph's adjacency lists array initial size as well as how much it will grow in each realloc.
  * 
  * @param initial_size initial size of the graph's adjacency lists array (once it's full, realloc will be called to increase its size).
  * @param delta_realloc defines how much the graph's adjacency lists array will grow in each realloc.
@@ -139,15 +145,66 @@ int graph_num_edges(Graph *g) {
 /**
  * Returns the size of the graph's adjacency lists array.
  */
-int graph_adj_size(Graph *g) {
+int graph_array_size(Graph *g) {
     return g->adj_size;
+}
+
+
+/**
+ * Checks whether the given graph contains a cycle. Uses a non-recursive version of Depth-First Search (the code is harder to read, but it reduces the chances of a stack overflow).
+ * 
+ * @param g pointer to the graph.
+ * @return true if g has at least one cycle; false otherwise (g is a DAG).
+ */
+bool graph_has_cycle(Graph *g) 
+{
+    bool *visited = calloc(g->adj_size, sizeof(bool));          // used to keep track of the visited vertices
+    bool *on_stack = calloc(g->adj_size, sizeof(bool));         // used to keep track of the vertices in the current path
+    List *stack = list_create();
+
+    for(int v = 0; v < g->adj_size; v++) {                      // iterate through all the vertices of g
+        if(g->adj_lists[v] == NULL || visited[v])
+            continue;
+
+        int *t = malloc(sizeof(int));  *t = v;
+        list_push(stack, t);
+
+        while(!list_empty(stack)) {                             // iterating through the stack
+            int w = *((int*) list_top(stack));
+            
+            if(!visited[w])
+                visited[w] = on_stack[w] = true;
+            else {
+                on_stack[w] = false;
+                free(list_pop(stack));
+            }
+
+            int *adj_w = graph_adj_to(g, w);
+            for(int i = 0; i < graph_adj_count(g, w); i++) {    // iterating through w's adjacency list
+                int s = adj_w[i];
+                if(!visited[s]) {
+                    int *t2 = malloc(sizeof(int));  *t2 = s;
+                    list_push(stack, t2);
+                }
+                else if(on_stack[s]) {
+                    free(visited);  free(on_stack);  list_free(&stack, &free);  free(adj_w);
+                    return true;
+                }
+            }
+            free(adj_w);
+        }
+    }
+
+    free(visited);  free(on_stack);
+    list_free(&stack, &free);
+    return false;
 }
 
 
 /**
  * Adds a new vertex v to the graph. Initially, the vertex's adjacency list will be empty. If the graph's adjacency lists array's size is less than v, it will be reallocated in order to store the new vertex.
  * 
- * WARNING: be careful when adding/removing vertices from a graph, for the graphs in this implementation will have an adjacency lists array with a size greater than or equal to the highest indexed vertex added to it. In other words, once a graph's adjacency lists array is increased in size, it can't be shrunk back!
+ * WARNING: be careful when adding/removing vertices from a graph, for the graphs in this implementation will have an adjacency lists array with a size greater than or equal to the highest indexed vertex added to it. Once a graph's adjacency lists array is increased in size, it won't automatically be shrunk back!
  * 
  * @param g a pointer to the graph.
  * @param v the identifier (index) of the new vertex.
@@ -216,7 +273,7 @@ bool graph_add_edge(Graph *g, int v, int w, bool create_if_needed)
 
 
 /**
- * NOT IMPLEMENTED 
+ * @todo NOT IMPLEMENTED 
  * 
  * @param g 
  * @param num 
@@ -238,6 +295,8 @@ static bool compare_ints(void *a, void *b) {
 
 /**
  * Removes a vertex from the given graph (along with all the edges that points to it).
+ * 
+* WARNING: be careful when adding/removing vertices from a graph, for the graphs in this implementation will have an adjacency lists array with a size greater than or equal to the highest indexed vertex added to it. Once a graph's adjacency lists array is increased in size, it won't automatically be shrunk back!
  * 
  * @param g pointer to the graph.
  * @param v index that identifies the vertex.
@@ -302,13 +361,13 @@ int* graph_vertices(Graph *g) {
 
 
 /**
- * Returns an array containing the vertices adjacent to v. The array is generated from v's adjacency list, so this is NOT an O(1) operation!
+ * Returns an array containing the vertices adjacent to v. The array is generated from v's adjacency list, so keep in mind that this is NOT an O(1) operation!
  * 
  * @param g a pointer to the graph.
  * @param v the identifier (index) of vertex v.
  * @return an array containing the vertices adjacent to v or NULL if v is not adjacent to any vertices.
  */
-int* graph_adj(Graph *g, int v) {
+int* graph_adj_to(Graph *g, int v) {
     int size = list_size(g->adj_lists[v]);
     if(size == 0)  
         return NULL;

@@ -3,6 +3,7 @@
  * @author Gabriel Nogueira (Talendar).
  */
 
+
 #ifndef SIMPLY_LINKED_LIST_H
     #define SIMPLY_LINKED_LIST_H
     #include <stdbool.h>
@@ -19,6 +20,7 @@
     int list_size(List *list);
     bool list_empty(List *list);
     bool list_full(List *list);
+    void* list_top(List *list);
 
     /* Insertion */
     bool list_append(List *list, void *item);

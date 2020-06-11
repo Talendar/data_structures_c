@@ -92,6 +92,14 @@ bool list_full(List *list) {
 
 
 /**
+ * Returns, without removing, the first item in the list.
+ */
+void* list_top(List *list) {
+    return list->head->item;
+}
+
+
+/**
  * Inserts an item at the end of the list.
  * 
  * @param list 

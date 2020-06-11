@@ -1,5 +1,7 @@
 /**
- * Simple program to test my digraph implementation.
+ * Simple program to test my digraph implementation. 
+ * To help with the tests, the following website was used: https://visualgo.net/en/graphds (access on June 11, 2020).
+ * 
  * @author Gabriel Nogueira (Talendar)
  */
 
@@ -51,7 +53,8 @@ int main(void)
             }
             // [5] PRINT INFO
             else if(opt == 5) {
-                printf("INFO: { |V| = %d  \\   |E| = %d   \\   adj_lists_array_size = %d }\n", graph_num_vertices(g), graph_num_edges(g), graph_adj_size(g));
+                printf("INFO: { |V| = %d  <>   |E| = %d   <>   DAG: %d   <>   adj_lists_array_size = %d }\n\n", 
+                                graph_num_vertices(g), graph_num_edges(g), !graph_has_cycle(g), graph_array_size(g));
             }
             // [6] PRINT ADJACENCY LISTS
             else if(opt == 6) {
