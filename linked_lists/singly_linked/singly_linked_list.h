@@ -1,6 +1,6 @@
 /**
- * Implementation of a singly linked list. 
- * Created by Gabriel Nogueira (Talendar).
+ * Implementation of a singly linked list.
+ * @author Gabriel Nogueira (Talendar).
  */
 
 #ifndef SIMPLY_LINKED_LIST_H
@@ -31,9 +31,16 @@
     void* list_pop(List *list);
     void* list_dequeue(List *list);
     void* list_remove(List *list, void *id, bool (*compare_id)(void *item, void *id));
+    int list_remove_all(List *list, void *id, bool (*compare_id)(void *item, void *id), void (*free_item)(void *item));
 
     /* Search */
     void* list_find(List *list, void *id, bool (*compare_id)(void *item, void *id));
+
+    /* Operations on/with nodes */
+    Node* list_head(List *list);
+    Node* list_end(List *list);
+    Node* list_next_node(Node *n);
+    void* list_node_item(Node *n);
 
     /* Others */
     bool list_switch_items(List *list, int i1, int i2);
