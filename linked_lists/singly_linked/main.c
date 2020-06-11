@@ -1,6 +1,6 @@
 /**
  * Simple program to test my singly linked list implementation.
- * Created by Gabriel Nogueira (Talendar).
+ * @author Gabriel Nogueira (Talendar).
  */
 
 
@@ -158,18 +158,28 @@ int main(void)
                 }
                 //REMOVE BY ID
                 else if(opt == '3') {
-                    printf("\nWhat integer would you like to remove from the list? Only the first found is removed.\n");
-                    int *id = malloc(sizeof(int)); scanf(" %d", id);
-                    int *n = list_remove(list, id, &compare_ints);
+                    printf("\nWhat integer would you like to remove from the list?\n");
+                    int id; scanf(" %d", &id);
 
-                    if(n != NULL) {
-                        printf("\nThe integer {%d} was removed from the list.", *n);
-                        free(n);
-                    }
-                    else
-                        printf("\nInteger not found on the list!");
+                    printf("\nRemove the first found[0] or all found[1]?\n");
+                    int rem_all;  scanf(" %d", &rem_all);
                     
-                    free(id);
+                    // remove first found
+                    if(!rem_all) {
+                        int *n = list_remove(list, &id, &compare_ints);
+
+                        if(n != NULL) {
+                            printf("\nThe integer {%d} was removed from the list.", *n);
+                            free(n);
+                        }
+                        else
+                            printf("\nInteger not found on the list!");
+                    }
+                    // remove all found
+                    else {
+                        int count = list_remove_all(list, &id, &compare_ints, &free);
+                        printf("\n%d items removed from the list.", count);
+                    }
                 }
                 break;
             }
@@ -177,15 +187,14 @@ int main(void)
             /* FIND BY ID */
             case '2': {
                 printf("\nWhat integer would you like to find on the list?\n");
-                int *id = malloc(sizeof(int)); scanf(" %d", id);
-                int *n = list_find(list, id, &compare_ints);
+                int id; scanf(" %d", &id);
+                int *n = list_find(list, &id, &compare_ints);
 
                 if(n != NULL) 
-                    printf("\nThe integer {%d} found the list.", *n);
+                    printf("\nThe integer {%d} is in the list.", *n);
                 else
                     printf("\nInteger not found on the list!");
 
-                free(id);
                 break;
             }
 

@@ -1,12 +1,13 @@
 /**
  * Implementation of a singly linked list.
- * Created by Gabriel Nogueira (Talendar).
+ * @author Gabriel Nogueira (Talendar).
  */
 
 
 #include "singly_linked_list.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
 
 
 /**
@@ -24,6 +25,7 @@ struct Node {
 struct List {
     Node *head, *end;
     int size;
+
 };
 
 
@@ -59,6 +61,9 @@ void list_free(List **list, void (*item_free)(void *item))
         free(n);
         n = next;
     }
+
+    free(*list);
+    (*list) = NULL;
 }
 
 
@@ -95,7 +100,7 @@ bool list_full(List *list) {
  */
 bool list_append(List *list, void *item)
 {
-    Node *n = malloc(sizeof(Node));
+    Node *n = calloc(1, sizeof(Node));
     if(n != NULL) {
         n->item = item;
 
@@ -155,6 +160,34 @@ bool list_insert_at(List *list, void *item, int index)
 
 
 /**
+ * Removes the given node from the list.
+ * 
+ * @param list 
+ * @param current a pointer to the node that will be removed; this node's memory will be freed.
+ * @param previous a pointer to the node that precedes the node to be removed; pass NULL if there is none.
+ * @return a pointer to the item stored in the removed node.
+ */
+static void* remove_node(List *list, Node *current, Node *previous) 
+{
+    void *item = current->item;
+    Node *next = current->next;
+
+    if(current == list->head)
+        list->head = next;
+
+    if(current == list->end)
+        list->end = previous;
+
+    if(previous != NULL) 
+        previous->next = next;
+
+    list->size--;
+    free(current);
+    return item;
+}
+
+
+/**
  * Removes and returns a pointer to the item at the given index in the list. 
  * 
  * @param list
@@ -169,25 +202,10 @@ void* list_remove_at(List *list, int index)
         current = current->next;
     }
 
-    void *item = NULL;
-    if(current != NULL) {
-        item = current->item;
-        Node *next = current->next;
+    if(current != NULL)
+        return remove_node(list, current, previous);
 
-        if(current == list->head)
-            list->head = next;
-
-        if(current == list->end)
-            list->end = previous;
-
-        if(previous != NULL) 
-            previous->next = next;
-
-        list->size--;
-        free(current);
-    }
-
-    return item;
+    return NULL;
 }
 
 
@@ -238,60 +256,94 @@ void* list_dequeue(List *list) {
 
 
 /**
- * Removes and returns a pointer to the item with the given ID on the list.
+ * Seeks for a node with the given item. 
+ * 
+ * @param current a pointer to the variable that stores a pointer to the initial search node; by the end of the execution, the variable pointed by "current" will contain a pointer to the last node searched (the 1st node with the given item if it's found or NULL if the search failed).
+ * @param previous a pointer to the variable that stores a pointer to the node that immediately precedes the initial search node; by the end of the execution, the variable pointed by "previous" will contain a pointer to the node the immediately precedes the last searched node (the list's end, if the search failed).
+ * @param id some identifier of the searched item.
+ * @param compare_id function used to verify the eligibility of an item; expected to return true if the item is the one being searched for and false otherwise.
+ * @return -
+ */
+static void seek(Node **current, Node **previous, void *id, bool (*compare_id)(void *item, void *id)) 
+{
+    while((*current) != NULL) {
+        if(compare_id((*current)->item, id))
+            return;
+
+        (*previous) = (*current);
+        (*current) = (*current)->next;
+    }
+}
+
+
+/**
+ * Removes, from the list, all the nodes with an item that matches the given ID.
  * 
  * @param list 
- * @param id identifies the item; can be any data type.
- * @param compare_id function to verify if some item's ID is the correct one.
- * @return a pointer to the item with the given ID or NULL if the item is not on the list.
+ * @param id some identifier of the searched item.
+ * @param compare_id function used to verify the eligibility of an item; expected to return true if the item is the one being searched for and false otherwise.
+ * @param free_item function to free the memory allocated by the items of the removed nodes; pass NULL if it isn't necessary to free the items.
+ * @return the number of nodes removed from the list. 
+ */
+int list_remove_all(List *list, void *id, bool (*compare_id)(void *item, void *id), void (*free_item)(void *item)) 
+{   
+    int count = 0;
+    if(list->size > 0) {
+        Node *current = list->head, *previous = NULL;
+        seek(&current, &previous, id, compare_id);
+
+        while(current != NULL) {
+            count++;
+            Node *next = current->next;
+            void *i = remove_node(list, current, previous);  
+
+            if(free_item != NULL && i != NULL)
+                free_item(i);
+
+            current = next;
+            seek(&current, &previous, id, compare_id);
+        }
+    }
+
+    return count;
+} 
+
+
+/**
+ * Removes the first node found with an item of the given ID and returns a pointer to the item. 
+ * 
+ * @param list 
+ * @param id some identifier of the searched item.
+ * @param compare_id function used to verify the eligibility of an item; expected to return true if the item is the one being searched for and false otherwise.
+ * @return a pointer to the item of the removed node or NULL if the item is not on the list.
  */
 void* list_remove(List *list, void *id, bool (*compare_id)(void *item, void *id))
 {
     Node *current = list->head, *previous = NULL;
-    while(current != NULL) {
-        if(compare_id(current->item, id)) {
-            void *item = current->item;
-            Node *next = current->next;
-
-            if(current == list->head)
-                list->head = next;
-
-            if(current == list->end)
-                list->end = previous;
-
-            if(previous != NULL) 
-                previous->next = next;
-
-            list->size--;
-            free(current);
-            return item;
-        }
-
-        previous = current;
-        current = current->next;
-    }
+    seek(&current, &previous, id, compare_id);
+    
+    if(current != NULL)
+        return remove_node(list, current, previous);
 
     return NULL;
 }
 
 
 /**
- * Returns, without removing, the item with the given ID on the list.
+ * Returns, without removing its node, the first item with the given ID on the list.
  * 
  * @param list 
- * @param id identifies the item; can be any data type.
- * @param compare_id function to verify if some item's ID is the correct one.
- * @return the item with the given ID or NULLL if the item is not on the list.
+ * @param id some identifier of the searched item.
+ * @param compare_id function used to verify the eligibility of an item; expected to return true if the item is the one being searched for and false otherwise.
+ * @return the first found item or NULLL if the item is not on the list.
  */
 void* list_find(List *list, void *id, bool (*compare_id)(void *item, void *id))
 {
-    Node *n = list->head;
-    while(n != NULL) {
-        if(compare_id(n->item, id))
-            return n->item;
-
-        n = n->next;
-    }
+    Node *current = list->head, *previous = NULL;
+    seek(&current, &previous, id, compare_id);
+    
+    if(current != NULL)
+        return current->item;
 
     return NULL;
 }
@@ -326,11 +378,43 @@ bool list_switch_items(List *list, int i1, int i2)
 
 
 /**
- * Inverts the order of the list elements.
+ * Inverts the order of the list's elements.
  */
 void list_invert(List *list) {
     for(int i = 0; i < list->size/2; i++)
         list_switch_items(list, i, (list->size - i - 1));
+}
+
+
+/**
+ * Returns the head node of the list. Returns NULL if the list is empty.
+ */
+Node* list_head(List *list) {
+    return list->head;
+}
+
+
+/**
+ * Returns the last node of the list. Returns NULL if the list is empty.
+ */
+Node* list_end(List *list) {
+    return list->end;
+}
+
+
+/**
+ * Returns the node pointed by n (its next node). If n is the last node of the list, NULL is returned. This function can be used to help iterating through the list.
+ */
+Node* list_next_node(Node *n) {
+    return n->next;
+}
+
+
+/**
+ * Returns the item stored by the node n.
+ */
+void* list_node_item(Node *n) {
+    return n->item;
 }
 
 
