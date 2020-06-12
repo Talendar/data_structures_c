@@ -202,6 +202,55 @@ bool graph_has_cycle(Graph *g)
 
 
 /**
+ * Finds all the source vertices of the graph. Source vertices are those that don't have any edges pointing to them.
+ */
+List* graph_find_sources(Graph *g) 
+{
+    bool *is_source = calloc(g->adj_size, sizeof(bool));
+    int source_count = g->adj_size;
+    for(int i = 0; i < g->adj_size; i++)
+        is_source[i] = true;
+
+    /* Finding sources */
+    for(int v = 0; v < g->adj_size; v++) {
+        if(g->adj_lists[v] != NULL) {
+            int *adj_v = graph_adj_to(g, v);
+            for(int i = 0; i < graph_adj_count(g, v); i++) {
+                int w = adj_v[i];
+                if(is_source[w]) {
+                    is_source[w] = false;
+                    source_count--;
+                }
+            }
+            free(adj_v);
+        }
+        else {
+            is_source[v] = false;
+            source_count--;
+        }
+    }
+
+    /* Retrieving sources */
+    if(source_count == 0) {
+        free(is_source);
+        return NULL;
+    }
+
+    List *sources = list_create();
+    for(int v = 0; v < g->adj_size && source_count > 0; v++) {
+        if(is_source[v]) {
+            int *t = malloc(sizeof(int));  *t = v;
+            list_append(sources, t);
+            source_count--;
+        }
+    }
+
+    free(is_source);
+    return sources;
+}
+
+
+/**
  * Adds a new vertex v to the graph. Initially, the vertex's adjacency list will be empty. If the graph's adjacency lists array's size is less than v, it will be reallocated in order to store the new vertex.
  * 
  * WARNING: be careful when adding/removing vertices from a graph, for the graphs in this implementation will have an adjacency lists array with a size greater than or equal to the highest indexed vertex added to it. Once a graph's adjacency lists array is increased in size, it won't automatically be shrunk back!

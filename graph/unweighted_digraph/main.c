@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "unweighted_digraph.h"
+#include "singly_linked_list.h"
 
 
 /**
@@ -21,6 +22,7 @@
  *      4 v     - removes the vertex v from the graph
  *      5       - prints informations about the graph (number of vertices and edges, etc)
  *      6       - prints the adjacency list of all the graph's vertices
+ *      7       - prints all the source vertices of the graph
  *      
  */
 int main(void) 
@@ -53,7 +55,7 @@ int main(void)
             }
             // [5] PRINT INFO
             else if(opt == 5) {
-                printf("INFO: { |V| = %d  <>   |E| = %d   <>   DAG: %d   <>   adj_lists_array_size = %d }\n\n", 
+                printf("INFO: { |V| = %d  <>   |E| = %d   <>   DAG: %d   <>   adj_lists_array_size = %d }\n", 
                                 graph_num_vertices(g), graph_num_edges(g), !graph_has_cycle(g), graph_array_size(g));
             }
             // [6] PRINT ADJACENCY LISTS
@@ -61,6 +63,23 @@ int main(void)
                 printf("\n--------------------------------------------\n");
                 graph_print(g);
                 printf("--------------------------------------------\n\n");
+            }
+            // [7] PRINT SOURCE VERTICES
+            else if(opt == 7) {
+                List *sources = graph_find_sources(g);
+                if(sources != NULL) {
+                    printf("SOURCE VERTICES: ");
+                    while(!list_empty(sources)) {
+                        int *v = list_pop(sources);
+                        printf(" %d  ", *v);
+                        free(v);
+                    }
+                    printf("\n\n");
+                }
+                else 
+                    printf("NO SOURCE VERTICES.\n\n");
+                
+                list_free(&sources, NULL);
             }
 
         } while(opt != 0);

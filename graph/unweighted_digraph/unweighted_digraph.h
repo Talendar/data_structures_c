@@ -14,6 +14,7 @@
 #ifndef UNWEIGHTED_DIGRAPH_H
     #define UNWEIGHTED_DIGRAPH_H
     #include <stdbool.h>
+    #include "singly_linked_list.h"
 
     /* Constants */
     static const int ADJ_LISTS_ARRAY_INITIAL_SIZE = 20;        // the initial size of a graph's adjacency lists array
@@ -42,6 +43,7 @@
 
     bool graph_has_vertex(Graph *g, int v);
     bool graph_has_cycle(Graph *g);
+    List* graph_find_sources(Graph *g);
 
     int* graph_vertices(Graph *g);
     int* graph_adj_to(Graph *g, int v);
