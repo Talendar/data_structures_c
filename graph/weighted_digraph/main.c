@@ -1,6 +1,8 @@
 /**
  * Simple program to test my weighted digraph implementation. 
- * To help with the tests, the following website was used: https://visualgo.net/en/graphds (access on June 30, 2020).
+ * To help with the tests, the following websites were used (access on Jul 1, 2020): 
+ *      https://visualgo.net/en/graphds 
+ *      https://www.cs.usfca.edu/~galles/visualization/Dijkstra.html
  * 
  * @author Gabriel Nogueira (Talendar)
  */

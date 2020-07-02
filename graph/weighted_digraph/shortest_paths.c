@@ -1,5 +1,16 @@
 /**
+ * Simple API for resolving single-source shortest paths problems.
  * 
+ * Example of use:
+ *      SPT *spt = dijkstra_sp(g, s);      // shortest paths tree of the graph g with the vertex s as the root
+ *      List *path = spt_path_to(spt, v);  // shortest path from s to v
+ * 
+ * @todo: change the Dijkstra's algorithm implementation to use a heap-based
+ * priority queue.
+ * @todo: implement the Bellman-Ford algorithm (deals with negative edges weights).
+ * 
+ * @version 1.0
+ * @author Gabriel Nogueira (Talendar)
  */
 
 
@@ -181,8 +192,6 @@ static bool relax_edge(Edge *e, SPT *spt)
     double current_dist = spt->dist_to[w],
            new_dist = edge_weight(e) + spt->dist_to[v];
 
-    //printf("        new_dist = %.2lf  |  current_dist = %.2lf", new_dist, current_dist);
-
     if(new_dist < current_dist) {
         free(spt->edge_to[w]);
         spt->edge_to[w] = copy_edge(e);
@@ -235,22 +244,17 @@ SPT* dijkstra_sp(Graph *g, int s)
 
     set[spt->source] = true;
     int count = 1;  // number of vertices currently in the set
-    //printf("Adding %d to the set.\n", spt->source);
 
     while(count > 0) {
         int v = pop_lowest_key(set, spt);
-        //printf("Removing %d to the set.\n", v);
         count--;
 
         // relaxes the vertex
         Edge **edges = edges_from_vertix(g, v);
-        if(edges != NULL) 
-        {
-            //printf("Iterating through edges from %d:\n", v);
+        if(edges != NULL) {
             for(int e = 0; e < vertex_adj_size(g, v); e++) {
                 bool relaxed = relax_edge(edges[e], spt);
                 int w = edge_dest(edges[e]);
-                //printf("    w = %d  |  relaxed = %d\n", w, relaxed);
 
                 if(relaxed && !set[w]) {
                     set[w] = true;
@@ -265,5 +269,3 @@ SPT* dijkstra_sp(Graph *g, int s)
     free(set);
     return spt;
 }
-
-
